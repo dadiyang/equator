@@ -18,6 +18,7 @@ public class GetterBaseEquator extends AbstractEquator {
     private static final String GET = "get";
     private static final String IS = "is";
     private static final String GET_IS = "get|is";
+    private static final String GET_CLASS = "getClass";
 
     /**
      * {@inheritDoc}
@@ -36,6 +37,10 @@ public class GetterBaseEquator extends AbstractEquator {
             if (method.getName().startsWith(GET)
                     || method.getName().startsWith(IS)) {
                 if (method.getParameterTypes().length == 0) {
+                    // 忽略 getClass 方法
+                    if (method.getName().equals(GET_CLASS)) {
+                        continue;
+                    }
                     getters.add(method);
                 }
             }

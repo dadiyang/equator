@@ -6,8 +6,8 @@
 
     <groupId>com.github.dadiyang</groupId>
     <artifactId>equator</artifactId>
-    <packaging>jar</packaging>
     <version>1.0.0</version>
+    <packaging>jar</packaging>
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>

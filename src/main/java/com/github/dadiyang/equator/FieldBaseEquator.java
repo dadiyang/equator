@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 基于属性的比对器
@@ -25,10 +24,6 @@ public class FieldBaseEquator extends AbstractEquator {
         Object obj = first == null ? second : first;
         Field[] fields = obj.getClass().getDeclaredFields();
         for (Field field : fields) {
-            // 索引时间只在ES里有，不用判断
-            if (Objects.equals("indexedTime", field.getName())) {
-                continue;
-            }
             String fieldName = field.getName();
             try {
                 field.setAccessible(true);

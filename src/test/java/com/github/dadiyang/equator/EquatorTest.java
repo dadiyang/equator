@@ -103,8 +103,7 @@ public class EquatorTest {
         params[4] = Arrays.asList(new FieldInfo("id", long.class, null, 6L),
                 new FieldInfo("username", String.class, null, "yang"),
                 new FieldInfo("hobbies", String[].class, null, hobby2),
-                new FieldInfo("expired", boolean.class, null, false),
-                new FieldInfo("class", Class.class, null, User.class));
+                new FieldInfo("expired", boolean.class, null, false));
         ps.add(params);
         return ps;
     }
@@ -130,7 +129,7 @@ public class EquatorTest {
         }
         Collections.sort(fields, getStringComparator());
         Collections.sort(expectDiffField, getStringComparator());
-        assertArrayEquals("不等的属性与预期不一致", fields.toArray(), expectDiffField.toArray());
+        assertArrayEquals("不等的属性与预期不一致", expectDiffField.toArray(), fields.toArray());
     }
 
     private Comparator<? super FieldInfo> getStringComparator() {
