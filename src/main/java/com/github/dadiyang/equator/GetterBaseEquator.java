@@ -12,7 +12,7 @@ import java.util.List;
  * 所有无参的 get 和 is 方法都认为是对象的属性
  *
  * @author dadiyang
- * @date 2018/11/22
+ * date 2018/11/22
  */
 public class GetterBaseEquator extends AbstractEquator {
     private static final String GET = "get";

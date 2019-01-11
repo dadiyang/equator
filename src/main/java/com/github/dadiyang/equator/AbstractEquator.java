@@ -8,7 +8,7 @@ import java.util.Objects;
  * 对比器抽象类
  *
  * @author dadiyang
- * @date 2018/11/22
+ * date 2018/11/22
  */
 public abstract class AbstractEquator implements Equator {
     /**

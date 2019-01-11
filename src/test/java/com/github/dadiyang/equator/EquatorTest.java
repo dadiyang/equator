@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
  * 考虑各种情况进行参数化的单元测试
  *
  * @author dadiyang
- * @date 2018/11/22
+ * date 2018/11/22
  */
 @RunWith(Parameterized.class)
 public class EquatorTest {

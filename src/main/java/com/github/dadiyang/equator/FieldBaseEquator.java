@@ -10,7 +10,7 @@ import java.util.Objects;
  * 基于属性的比对器
  *
  * @author dadiyang
- * @date 2018/11/22
+ * date 2018/11/22
  */
 public class FieldBaseEquator extends AbstractEquator {
     /**
