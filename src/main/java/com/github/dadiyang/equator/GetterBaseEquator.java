@@ -67,14 +67,14 @@ public class GetterBaseEquator extends AbstractEquator {
             }
             if (m.getReturnType() == Boolean.class || m.getReturnType() == boolean.class) {
                 // 如果返回值是 boolean 则兼容 isXxx 的写法
-                if (m.getName().startsWith("is")) {
+                if (m.getName().startsWith(IS)) {
                     String fieldName = uncapitalize(m.getName().substring(2));
                     getters.put(fieldName, m);
                     continue;
                 }
             }
             // 以get开头但排除getClass()方法
-            if (m.getName().startsWith("get") && !GET_CLASS.equals(m.getName())) {
+            if (m.getName().startsWith(GET) && !GET_CLASS.equals(m.getName())) {
                 String fieldName = uncapitalize(m.getName().replaceFirst(GET_IS, ""));
                 getters.put(fieldName, m);
             }
