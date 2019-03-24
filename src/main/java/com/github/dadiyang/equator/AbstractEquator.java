@@ -46,12 +46,12 @@ public abstract class AbstractEquator implements Equator {
      * @return 不同的字段信息，相等返回空集，不等则 FieldInfo 的字段名为对象的类型名称
      */
     protected List<FieldInfo> comparePrimitive(Object first, Object second) {
-        Object obj = first == null ? second : first;
-        Class<?> clazz = obj.getClass();
         boolean eq = Objects.equals(first, second);
         if (eq) {
             return Collections.emptyList();
         } else {
+            Object obj = first == null ? second : first;
+            Class<?> clazz = obj.getClass();
             // 不等的字段名称使用类的名称
             return Collections.singletonList(new FieldInfo(clazz.getSimpleName(), clazz, first, second));
         }
