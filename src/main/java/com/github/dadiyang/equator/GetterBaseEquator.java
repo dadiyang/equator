@@ -2,9 +2,7 @@ package com.github.dadiyang.equator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * 基于 getter 方法比对两个对象
@@ -28,26 +26,16 @@ public class GetterBaseEquator extends AbstractEquator {
         if (first == null && second == null) {
             return Collections.emptyList();
         }
+        // 先尝试判断是否为原始数据类型
+        if (isPrimitive(first, second)) {
+            return comparePrimitive(first, second);
+        }
         List<FieldInfo> diffField = new LinkedList<>();
         Object obj = first == null ? second : first;
-        Method[] methods = obj.getClass().getMethods();
-        List<Method> getters = new LinkedList<>();
-        for (Method method : methods) {
-            // 获取所有 get 和 is 开头的方法
-            if (method.getName().startsWith(GET)
-                    || method.getName().startsWith(IS)) {
-                if (method.getParameterTypes().length == 0) {
-                    // 忽略 getClass 方法
-                    if (method.getName().equals(GET_CLASS)) {
-                        continue;
-                    }
-                    getters.add(method);
-                }
-            }
-        }
-        for (Method method : getters) {
-            // 去掉前缀并将首字母小写
-            String fieldName = uncapitalize(method.getName().replaceFirst(GET_IS, ""));
+        Map<String, Method> getters = getAllGetters(obj.getClass());
+        for (Map.Entry<String, Method> entry : getters.entrySet()) {
+            String fieldName = entry.getKey();
+            Method method = entry.getValue();
             try {
                 boolean eq;
                 Object firstVal = first == null ? null : method.invoke(first);
@@ -62,6 +50,36 @@ public class GetterBaseEquator extends AbstractEquator {
             }
         }
         return diffField;
+    }
+
+    /**
+     * 获取类中的所有 getter 方法
+     *
+     * @return key -> fieldName, value -> getter
+     */
+    private Map<String, Method> getAllGetters(Class<?> clazz) {
+        Map<String, Method> getters = new LinkedHashMap<>(8);
+        Method[] methods = clazz.getMethods();
+        for (Method m : methods) {
+            // getter 方法没有参数
+            if (m.getParameterTypes().length > 0) {
+                continue;
+            }
+            if (m.getReturnType() == Boolean.class || m.getReturnType() == boolean.class) {
+                // 如果返回值是 boolean 则兼容 isXxx 的写法
+                if (m.getName().startsWith("is")) {
+                    String fieldName = uncapitalize(m.getName().substring(2));
+                    getters.put(fieldName, m);
+                    continue;
+                }
+            }
+            // 以get开头但排除getClass()方法
+            if (m.getName().startsWith("get") && !GET_CLASS.equals(m.getName())) {
+                String fieldName = uncapitalize(m.getName().replaceFirst(GET_IS, ""));
+                getters.put(fieldName, m);
+            }
+        }
+        return getters;
     }
 
     /**

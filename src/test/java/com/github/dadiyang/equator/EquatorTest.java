@@ -127,8 +127,8 @@ public class EquatorTest {
         if (expectDiffField.isEmpty()) {
             assertTrue("有不同的属性出现", fields.isEmpty());
         }
-        Collections.sort(fields, getStringComparator());
-        Collections.sort(expectDiffField, getStringComparator());
+        fields.sort(getStringComparator());
+        expectDiffField.sort(getStringComparator());
         assertArrayEquals("不等的属性与预期不一致", expectDiffField.toArray(), fields.toArray());
     }
 

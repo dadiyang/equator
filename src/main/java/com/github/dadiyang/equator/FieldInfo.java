@@ -23,7 +23,6 @@ public class FieldInfo {
         this.secondVal = secondVal;
     }
 
-
     public String getFieldName() {
         return fieldName;
     }
