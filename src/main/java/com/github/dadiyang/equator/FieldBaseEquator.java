@@ -10,6 +10,19 @@ import java.util.*;
  * date 2018/11/22
  */
 public class FieldBaseEquator extends AbstractEquator {
+    public FieldBaseEquator() {
+    }
+
+    /**
+     * 指定包含或排除某些字段
+     *
+     * @param includeFields 包含字段，若为 null 或空集，则不指定
+     * @param excludeFields 排除字段，若为 null 或空集，则不指定
+     */
+    public FieldBaseEquator(List<String> includeFields, List<String> excludeFields) {
+        super(includeFields, excludeFields);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -18,9 +31,9 @@ public class FieldBaseEquator extends AbstractEquator {
         if (first == second) {
             return Collections.emptyList();
         }
-        // 先尝试判断是否为原始数据类型
-        if (isPrimitive(first, second)) {
-            return comparePrimitive(first, second);
+        // 先尝试判断是否为简单数据类型
+        if (isSimpleField(first, second)) {
+            return compareSimpleField(first, second);
         }
         Object obj = first == null ? second : first;
         Class<?> clazz = obj.getClass();

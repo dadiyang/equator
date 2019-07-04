@@ -105,6 +105,25 @@ public class EquatorTest {
                 new FieldInfo("hobbies", String[].class, null, hobby2),
                 new FieldInfo("expired", boolean.class, null, false));
         ps.add(params);
+
+        // 测试排除字段
+        Date now = new Date();
+        params = new Object[5];
+        params[0] = new GetterBaseEquator(null, Arrays.asList("id", "username"));
+        params[1] = new User(0, "noteq", now, new String[]{"program", "coding"});
+        params[2] = new User(1, "yang", now, new String[]{"program", "coding"});
+        params[3] = true;
+        params[4] = Collections.emptyList();
+        ps.add(params);
+
+        // 测试只包含特定字段
+        params = new Object[5];
+        params[0] = new GetterBaseEquator(Collections.singletonList("expireTime"), null);
+        params[1] = new User(0, "noteq2", now, new String[]{"program", "coding"});
+        params[2] = new User(1, "yang", now, new String[]{"program", "coding"});
+        params[3] = true;
+        params[4] = Collections.emptyList();
+        ps.add(params);
         return ps;
     }
 
@@ -130,6 +149,20 @@ public class EquatorTest {
         fields.sort(getStringComparator());
         expectDiffField.sort(getStringComparator());
         assertArrayEquals("不等的属性与预期不一致", expectDiffField.toArray(), fields.toArray());
+    }
+
+    @Test
+    public void name() {
+        Equator equator = new GetterBaseEquator() {
+            @Override
+            protected boolean isFieldEquals(FieldInfo fieldInfo) {
+                if ("id".equalsIgnoreCase(fieldInfo.getFieldName())) {
+                    return true;
+                }
+                return super.isFieldEquals(fieldInfo);
+            }
+        };
+        equator.isEquals(user1, user2);
     }
 
     private Comparator<? super FieldInfo> getStringComparator() {

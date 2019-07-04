@@ -18,6 +18,19 @@ public class GetterBaseEquator extends AbstractEquator {
     private static final String GET_IS = "get|is";
     private static final String GET_CLASS = "getClass";
 
+    public GetterBaseEquator() {
+    }
+
+    /**
+     * 指定包含或排除某些字段
+     *
+     * @param includeFields 包含字段，若为 null 或空集，则不指定
+     * @param excludeFields 排除字段，若为 null 或空集，则不指定
+     */
+    public GetterBaseEquator(List<String> includeFields, List<String> excludeFields) {
+        super(includeFields, excludeFields);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -26,9 +39,9 @@ public class GetterBaseEquator extends AbstractEquator {
         if (first == null && second == null) {
             return Collections.emptyList();
         }
-        // 先尝试判断是否为原始数据类型
-        if (isPrimitive(first, second)) {
-            return comparePrimitive(first, second);
+        // 先尝试判断是否为普通数据类型
+        if (isSimpleField(first, second)) {
+            return compareSimpleField(first, second);
         }
         List<FieldInfo> diffField = new LinkedList<>();
         Object obj = first == null ? second : first;
@@ -97,7 +110,7 @@ public class GetterBaseEquator extends AbstractEquator {
         if (firstCodepoint == newCodePoint) {
             return str;
         }
-        final int newCodePoints[] = new int[strLen];
+        final int[] newCodePoints = new int[strLen];
         int outOffset = 0;
         newCodePoints[outOffset++] = newCodePoint;
         for (int inOffset = Character.charCount(firstCodepoint); inOffset < strLen; ) {
