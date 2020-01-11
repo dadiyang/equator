@@ -57,15 +57,11 @@ public abstract class AbstractEquator implements Equator {
         if (isExclude(fieldInfo)) {
             return true;
         }
+        // 如果有指定需要包含的字段而且当前字段不在需要包含的字段中则不比对
         if (!isInclude(fieldInfo)) {
             return true;
         }
-        // 如果有指定需要包含的字段
-        if (includeFields == null || includeFields.isEmpty() || !includeFields.contains(fieldInfo.getFieldName())) {
-            return nullableEquals(fieldInfo.getFirstVal(), fieldInfo.getSecondVal());
-        } else {
-            return true;
-        }
+        return nullableEquals(fieldInfo.getFirstVal(), fieldInfo.getSecondVal());
     }
 
     /**

@@ -148,6 +148,7 @@ public class EquatorTest {
         }
         fields.sort(getStringComparator());
         expectDiffField.sort(getStringComparator());
+        System.out.println(Arrays.toString(expectDiffField.toArray()) + " " + Arrays.toString(fields.toArray()));
         assertArrayEquals("不等的属性与预期不一致", expectDiffField.toArray(), fields.toArray());
     }
 

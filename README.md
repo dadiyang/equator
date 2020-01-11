@@ -21,11 +21,11 @@
 <dependency>
     <groupId>com.github.dadiyang</groupId>
     <artifactId>equator</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
-或者下载 [equator-1.0.2.jar](https://github.com/dadiyang/equator/releases/download/v1.0.2/equator-1.0.2.jar) ，并添加到 classpath 下。
+或者下载 [equator-1.0.3.jar](https://github.com/dadiyang/equator/releases/download/v1.0.3/equator-1.0.3.jar) ，并添加到 classpath 下。
 
 ## 调用方法
 
