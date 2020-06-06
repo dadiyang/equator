@@ -26,7 +26,7 @@
 </dependency>
 ```
 
-或者下载 [equator-1.0.3.jar](https://github.com/dadiyang/equator/releases/download/v1.0.3/equator-1.0.3.jar) ，并添加到 classpath 下。
+或者下载 [equator-1.0.4.jar](https://github.com/dadiyang/equator/releases/download/v1.0.4/equator-1.0.4.jar) ，并添加到 classpath 下。
 
 ## 调用方法
 
