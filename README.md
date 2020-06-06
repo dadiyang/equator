@@ -11,6 +11,7 @@
 1. 如果有一个对象为空，则认为该对象的所有属性都为空
 2. 基于getter方法的对比器，会忽略 getClass() 方法
 3. 属性比对默认使用 `Objects.deepEquals` 方法进行比对，如果是集合类，会转换为数组进行对比
+4. 支持比对两个不同类型的对象，默认只比对两个类字段的交集，即两个类都有的字段才比对，可以设置 bothExistFieldOnly 配置，字段不存在和 null 视为相等
 
 # 使用
 
@@ -21,7 +22,7 @@
 <dependency>
     <groupId>com.github.dadiyang</groupId>
     <artifactId>equator</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 </dependency>
 ```
 
@@ -33,8 +34,9 @@
 
 ```java
 Equator equator = new GetterBaseEquator();
+// 支持比对两个不同类型的对象，默认只比对两个类字段的交集，即两个类都有的字段才比对
 User user1 = new User(...);
-User user2 = new User(...);
+UserDTO user2 = new UserDTO(...);
 
 // 判断属性是否完全相等
 equator.isEquals(user1, user2);

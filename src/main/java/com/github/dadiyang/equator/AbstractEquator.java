@@ -1,6 +1,7 @@
 package com.github.dadiyang.equator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 对比器抽象类
@@ -12,12 +13,29 @@ public abstract class AbstractEquator implements Equator {
     private static final List<Class<?>> WRAPPER = Arrays.asList(Byte.class, Short.class,
             Integer.class, Long.class, Float.class, Double.class, Character.class,
             Boolean.class, String.class);
-    private final List<String> includeFields;
-    private final List<String> excludeFields;
+    private List<String> includeFields;
+    private List<String> excludeFields;
+    /**
+     * 是否只比对两个类都包含的属性，若为 true 则比对两个类字段的次，否则比对两个类字段的并集
+     * <p>
+     * 只对要比对的两个对象为不同类型时有效
+     * <p>
+     * 默认为 true
+     */
+    private boolean bothExistFieldOnly = true;
 
     public AbstractEquator() {
         includeFields = Collections.emptyList();
         excludeFields = Collections.emptyList();
+    }
+
+    /**
+     * @param bothExistFieldOnly 是否只对比两个类都包含的字段
+     */
+    public AbstractEquator(boolean bothExistFieldOnly) {
+        includeFields = Collections.emptyList();
+        excludeFields = Collections.emptyList();
+        this.bothExistFieldOnly = bothExistFieldOnly;
     }
 
     /**
@@ -29,6 +47,19 @@ public abstract class AbstractEquator implements Equator {
     public AbstractEquator(List<String> includeFields, List<String> excludeFields) {
         this.includeFields = includeFields;
         this.excludeFields = excludeFields;
+    }
+
+    /**
+     * 指定包含或排除某些字段
+     *
+     * @param includeFields      包含字段，若为 null 或空集，则不指定
+     * @param excludeFields      排除字段，若为 null 或空集，则不指定
+     * @param bothExistFieldOnly 是否只对比两个类都包含的字段，默认为 true
+     */
+    public AbstractEquator(List<String> includeFields, List<String> excludeFields, boolean bothExistFieldOnly) {
+        this.includeFields = includeFields;
+        this.excludeFields = excludeFields;
+        this.bothExistFieldOnly = bothExistFieldOnly;
     }
 
     /**
@@ -115,6 +146,19 @@ public abstract class AbstractEquator implements Equator {
         return clazz.isPrimitive() || WRAPPER.contains(clazz);
     }
 
+    Set<String> getAllFields(Set<String> firstFields, Set<String> secondFields) {
+        Set<String> allFields;
+        // 只取交集
+        if (isBothExistFieldOnly()) {
+            allFields = firstFields.stream().filter(secondFields::contains).collect(Collectors.toSet());
+        } else {
+            // 否则取并集
+            allFields = new HashSet<>(firstFields);
+            allFields.addAll(secondFields);
+        }
+        return allFields;
+    }
+
     private boolean nullableEquals(Object first, Object second) {
         if (first instanceof Collection
                 && second instanceof Collection) {
@@ -124,4 +168,27 @@ public abstract class AbstractEquator implements Equator {
         return Objects.deepEquals(first, second);
     }
 
+    public void setIncludeFields(List<String> includeFields) {
+        this.includeFields = includeFields;
+    }
+
+    public void setExcludeFields(List<String> excludeFields) {
+        this.excludeFields = excludeFields;
+    }
+
+    public void setBothExistFieldOnly(boolean bothExistFieldOnly) {
+        this.bothExistFieldOnly = bothExistFieldOnly;
+    }
+
+    public List<String> getIncludeFields() {
+        return includeFields;
+    }
+
+    public List<String> getExcludeFields() {
+        return excludeFields;
+    }
+
+    public boolean isBothExistFieldOnly() {
+        return bothExistFieldOnly;
+    }
 }

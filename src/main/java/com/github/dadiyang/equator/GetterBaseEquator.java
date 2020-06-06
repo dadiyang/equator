@@ -2,12 +2,16 @@ package com.github.dadiyang.equator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 基于 getter 方法比对两个对象
  * <p>
  * 所有无参的 get 和 is 方法都认为是对象的属性
+ * <p>
+ * 来源：https://github.com/dadiyang/equator
  *
  * @author dadiyang
  * date 2018/11/22
@@ -17,8 +21,16 @@ public class GetterBaseEquator extends AbstractEquator {
     private static final String IS = "is";
     private static final String GET_IS = "get|is";
     private static final String GET_CLASS = "getClass";
+    private static final Map<Class<?>, Map<String, Method>> CACHE = new ConcurrentHashMap<>();
 
     public GetterBaseEquator() {
+    }
+
+    /**
+     * @param bothExistFieldOnly 是否只对比两个类都包含的字段
+     */
+    public GetterBaseEquator(boolean bothExistFieldOnly) {
+        super(bothExistFieldOnly);
     }
 
     /**
@@ -29,6 +41,17 @@ public class GetterBaseEquator extends AbstractEquator {
      */
     public GetterBaseEquator(List<String> includeFields, List<String> excludeFields) {
         super(includeFields, excludeFields);
+    }
+
+    /**
+     * 指定包含或排除某些字段
+     *
+     * @param includeFields      包含字段，若为 null 或空集，则不指定
+     * @param excludeFields      排除字段，若为 null 或空集，则不指定
+     * @param bothExistFieldOnly 是否只对比两个类都包含的字段，默认为 true
+     */
+    public GetterBaseEquator(List<String> includeFields, List<String> excludeFields, boolean bothExistFieldOnly) {
+        super(includeFields, excludeFields, bothExistFieldOnly);
     }
 
     /**
@@ -43,26 +66,39 @@ public class GetterBaseEquator extends AbstractEquator {
         if (isSimpleField(first, second)) {
             return compareSimpleField(first, second);
         }
-        List<FieldInfo> diffField = new LinkedList<>();
-        Object obj = first == null ? second : first;
-        Map<String, Method> getters = getAllGetters(obj.getClass());
-        for (Map.Entry<String, Method> entry : getters.entrySet()) {
-            String fieldName = entry.getKey();
-            Method method = entry.getValue();
+        Set<String> allFieldNames;
+        // 获取所有字段
+        Map<String, Method> firstGetters = getAllGetters(first);
+        Map<String, Method> secondGetters = getAllGetters(second);
+        if (first == null) {
+            allFieldNames = secondGetters.keySet();
+        } else if (second == null) {
+            allFieldNames = firstGetters.keySet();
+        } else {
+            allFieldNames = getAllFields(firstGetters.keySet(), secondGetters.keySet());
+        }
+        List<FieldInfo> diffFields = new LinkedList<>();
+        for (String fieldName : allFieldNames) {
             try {
-                boolean eq;
-                Object firstVal = first == null ? null : method.invoke(first);
-                Object secondVal = second == null ? null : method.invoke(second);
-                FieldInfo fieldInfo = new FieldInfo(fieldName, method.getReturnType(), firstVal, secondVal);
-                eq = isFieldEquals(fieldInfo);
-                if (!eq) {
-                    diffField.add(fieldInfo);
+                Method firstGetterMethod = firstGetters.getOrDefault(fieldName, null);
+                Method secondGetterMethod = secondGetters.getOrDefault(fieldName, null);
+                Object firstVal = firstGetterMethod != null ? firstGetterMethod.invoke(first) : null;
+                Object secondVal = secondGetterMethod != null ? secondGetterMethod.invoke(second) : null;
+                FieldInfo fieldInfo = new FieldInfo(fieldName, getReturnType(firstGetterMethod), getReturnType(secondGetterMethod));
+                fieldInfo.setFirstVal(firstVal);
+                fieldInfo.setSecondVal(secondVal);
+                if (!isFieldEquals(fieldInfo)) {
+                    diffFields.add(fieldInfo);
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalStateException("获取属性进行比对发生异常: " + fieldName, e);
             }
         }
-        return diffField;
+        return diffFields;
+    }
+
+    private Class<?> getReturnType(Method method) {
+        return method == null ? null : method.getReturnType();
     }
 
     /**
@@ -70,29 +106,38 @@ public class GetterBaseEquator extends AbstractEquator {
      *
      * @return key -> fieldName, value -> getter
      */
-    private Map<String, Method> getAllGetters(Class<?> clazz) {
-        Map<String, Method> getters = new LinkedHashMap<>(8);
-        Method[] methods = clazz.getMethods();
-        for (Method m : methods) {
-            // getter 方法没有参数
-            if (m.getParameterTypes().length > 0) {
-                continue;
-            }
-            if (m.getReturnType() == Boolean.class || m.getReturnType() == boolean.class) {
-                // 如果返回值是 boolean 则兼容 isXxx 的写法
-                if (m.getName().startsWith(IS)) {
-                    String fieldName = uncapitalize(m.getName().substring(2));
-                    getters.put(fieldName, m);
-                    continue;
-                }
-            }
-            // 以get开头但排除getClass()方法
-            if (m.getName().startsWith(GET) && !GET_CLASS.equals(m.getName())) {
-                String fieldName = uncapitalize(m.getName().replaceFirst(GET_IS, ""));
-                getters.put(fieldName, m);
-            }
+    private Map<String, Method> getAllGetters(Object obj) {
+        if (obj == null) {
+            return Collections.emptyMap();
         }
-        return getters;
+        return CACHE.computeIfAbsent(obj.getClass(), k -> {
+            Class<?> clazz = obj.getClass();
+            Map<String, Method> getters = new LinkedHashMap<>(8);
+            while (clazz != Object.class) {
+                Method[] methods = clazz.getDeclaredMethods();
+                for (Method m : methods) {
+                    // getter 方法必须是 public 且没有参数的
+                    if (!Modifier.isPublic(m.getModifiers()) || m.getParameterTypes().length > 0) {
+                        continue;
+                    }
+                    if (m.getReturnType() == Boolean.class || m.getReturnType() == boolean.class) {
+                        // 如果返回值是 boolean 则兼容 isXxx 的写法
+                        if (m.getName().startsWith(IS)) {
+                            String fieldName = uncapitalize(m.getName().substring(2));
+                            getters.put(fieldName, m);
+                            continue;
+                        }
+                    }
+                    // 以get开头但排除getClass()方法
+                    if (m.getName().startsWith(GET) && !GET_CLASS.equals(m.getName())) {
+                        String fieldName = uncapitalize(m.getName().replaceFirst(GET_IS, ""));
+                        getters.put(fieldName, m);
+                    }
+                }
+                clazz = clazz.getSuperclass(); //得到父类,然后赋给自己
+            }
+            return getters;
+        });
     }
 
     /**
