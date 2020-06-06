@@ -146,7 +146,10 @@ public abstract class AbstractEquator implements Equator {
         return clazz.isPrimitive() || WRAPPER.contains(clazz);
     }
 
-    Set<String> getAllFields(Set<String> firstFields, Set<String> secondFields) {
+    /**
+     * 根据配置的规则决定取两个对象字段的交集或并集
+     */
+    Set<String> getAllFieldNames(Set<String> firstFields, Set<String> secondFields) {
         Set<String> allFields;
         // 只取交集
         if (isBothExistFieldOnly()) {

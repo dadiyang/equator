@@ -55,7 +55,7 @@ public class FieldBaseEquator extends AbstractEquator {
         } else if (second == null) {
             allFieldNames = firstFields.keySet();
         } else {
-            allFieldNames = getAllFields(firstFields.keySet(), secondFields.keySet());
+            allFieldNames = getAllFieldNames(firstFields.keySet(), secondFields.keySet());
         }
         List<FieldInfo> diffFields = new LinkedList<>();
         for (String fieldName : allFieldNames) {
