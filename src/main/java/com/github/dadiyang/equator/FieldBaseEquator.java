@@ -93,11 +93,12 @@ public class FieldBaseEquator extends AbstractEquator {
         if (obj == null) {
             return Collections.emptyMap();
         }
-        return CACHE.computeIfAbsent(obj.getClass(), k -> {
+        Class<?> clazz = obj.getClass();
+        Map<String, Field> allField = CACHE.get(clazz);
+        if (allField == null) {
             Map<String, Field> fieldMap = new HashMap<>(8);
-            Class<?> cls = k;
-            while (cls != Object.class) {
-                Field[] fields = cls.getDeclaredFields();
+            while (clazz != Object.class) {
+                Field[] fields = clazz.getDeclaredFields();
                 for (Field field : fields) {
                     // 一些通过字节码注入改写类的框架会合成一些字段，如 jacoco 的 $jacocoData 字段
                     // 正常情况下这些字段都需要被排除掉
@@ -105,9 +106,11 @@ public class FieldBaseEquator extends AbstractEquator {
                         fieldMap.put(field.getName(), field);
                     }
                 }
-                cls = cls.getSuperclass();
+                clazz = clazz.getSuperclass();
             }
+            CACHE.put(clazz, fieldMap);
             return fieldMap;
-        });
+        }
+        return allField;
     }
 }

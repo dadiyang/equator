@@ -110,8 +110,9 @@ public class GetterBaseEquator extends AbstractEquator {
         if (obj == null) {
             return Collections.emptyMap();
         }
-        return CACHE.computeIfAbsent(obj.getClass(), k -> {
-            Class<?> clazz = obj.getClass();
+        Class<?> clazz = obj.getClass();
+        Map<String, Method> allGetMethods = CACHE.get(clazz);
+        if (allGetMethods == null) {
             Map<String, Method> getters = new LinkedHashMap<>(8);
             while (clazz != Object.class) {
                 Method[] methods = clazz.getDeclaredMethods();
@@ -136,8 +137,10 @@ public class GetterBaseEquator extends AbstractEquator {
                 }
                 clazz = clazz.getSuperclass(); //得到父类,然后赋给自己
             }
+            CACHE.put(clazz, getters);
             return getters;
-        });
+        }
+        return allGetMethods;
     }
 
     /**
